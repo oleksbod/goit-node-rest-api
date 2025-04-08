@@ -1,45 +1,34 @@
-import fs from "fs/promises";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
+import User from "../db/models/user.js";
 
-const contactsPath = path.join("db", "contacts.json");
+export const listContacts = () => User.findAll();
 
-async function listContacts() {
-    const data = await fs.readFile(contactsPath, "utf-8");
-    return JSON.parse(data);
-}
+export const getContactById = (id) => User.findByPk(id);
 
-async function getContactById(contactId) {
-    const contacts = await listContacts();
-    return contacts.find((contact) => contact.id === contactId) || null;
-}
+export const removeContact = (id) =>
+    User.destroy({
+        where: {
+            id,
+        },
+    });
 
-async function removeContact(contactId) {
-    const contacts = await listContacts();
-    const index = contacts.findIndex((contact) => contact.id === contactId);
-    if (index === -1) return null;
-    const [removedContact] = contacts.splice(index, 1);
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-    return removedContact;
-}
+export const addContact = (data) => User.create(data);
 
-async function addContact(name, email, phone) {
-    const contacts = await listContacts();
-    const newContact = { id: uuidv4(), name, email, phone };
-    contacts.push(newContact);
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-    return newContact;
-}
+export const updateContact = async (id, data) => {
+    const user = await getContactById(id);
+    if (!user) return null;
 
-async function updateContact(contactId, updates) {
-    const contacts = await listContacts();
-    const index = contacts.findIndex((contact) => contact.id === contactId);
-    if (index === -1) return null;
+    return user.update(data, {
+        returning: true,
+    });
+};
 
-    contacts[index] = { ...contacts[index], ...updates };
-    await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
+export const updateStatusContact = async (id, data) => {
+    const user = await getContactById(id);
+    if (!user) return null;
 
-    return contacts[index];
-}
+    return user.update(data, {
+        returning: true,
+    });
+};
 
-export default { listContacts, getContactById, removeContact, addContact, updateContact };
+export default { listContacts, getContactById, removeContact, addContact, updateContact, updateStatusContact };
