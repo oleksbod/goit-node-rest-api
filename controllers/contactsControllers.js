@@ -83,7 +83,7 @@ export const updateContact = async (req, res, next) => {
 
 export const updateStatusContact = async (req, res, next) => {
     try {
-        const { id } = req.params;
+        const { contactId: id } = req.params;
         const { favorite } = req.body;
         const { id: owner } = req.user;
 
