@@ -5,6 +5,11 @@ import HttpError from "../helpers/HttpError.js";
 import compareHash from "../helpers/compareHash.js";
 import { createToken } from "../helpers/jwt.js";
 
+import path from "node:path";
+import fs from "fs/promises";
+
+const avatarsDir = path.resolve("public", "avatars");
+
 const register = async (req, res) => {
     const { email } = req.body;
     const user = await authServices.findUser({ email });
@@ -77,10 +82,32 @@ const updateSubscription = async (req, res) => {
     });
 };
 
+const updateAvatar = async (req, res) => {
+    const { path: tempPath, originalname } = req.file;
+    const { id } = req.user;
+
+    const ext = path.extname(originalname);
+    const filename = `${id}${ext}`;
+    const finalPath = path.join(avatarsDir, filename);
+
+    try {
+        await fs.rename(tempPath, finalPath);
+
+        const avatarURL = `/avatars/${filename}`;
+        await authServices.updateUserAvatar({ id, avatarURL });
+
+        res.status(200).json({ avatarURL });
+    } catch (err) {
+        await fs.unlink(tempPath);
+        throw HttpError(500, "Failed to process image");
+    }
+};
+
 export default {
     register: ctrlWrapper(register),
     login: ctrlWrapper(login),
     logout: ctrlWrapper(logout),
     current: ctrlWrapper(current),
     updateSubscription: ctrlWrapper(updateSubscription),
+    updateAvatar: ctrlWrapper(updateAvatar),
 };

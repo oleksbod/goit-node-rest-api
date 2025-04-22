@@ -5,8 +5,11 @@ import isEmptyBody from "../middlewares/isEmptyBody.js";
 
 import validateBody from "../decorators/validateBody.js";
 
+import upload from "../middlewares/upload.js";
+
 import { authRegisterSchema, authLoginSchema, updateSubscriptionSchema } from "../schemas/authSchemas.js";
 import authenticate from "../middlewares/authenticate.js";
+import isFileExist from "../middlewares/isFileExist.js";
 
 const authRouter = express.Router();
 
@@ -25,5 +28,7 @@ authRouter.patch(
     validateBody(updateSubscriptionSchema),
     authControllers.updateSubscription
 );
+
+authRouter.patch("/avatars", authenticate, upload.single("avatar"), isFileExist, authControllers.updateAvatar);
 
 export default authRouter;
