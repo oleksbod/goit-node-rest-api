@@ -7,7 +7,12 @@ import validateBody from "../decorators/validateBody.js";
 
 import upload from "../middlewares/upload.js";
 
-import { authRegisterSchema, authLoginSchema, updateSubscriptionSchema } from "../schemas/authSchemas.js";
+import {
+    authRegisterSchema,
+    authLoginSchema,
+    updateSubscriptionSchema,
+    authVerifySchema,
+} from "../schemas/authSchemas.js";
 import authenticate from "../middlewares/authenticate.js";
 import isFileExist from "../middlewares/isFileExist.js";
 
@@ -18,6 +23,10 @@ authRouter.post("/register", isEmptyBody, validateBody(authRegisterSchema), auth
 authRouter.post("/login", isEmptyBody, validateBody(authLoginSchema), authControllers.login);
 
 authRouter.post("/logout", authenticate, authControllers.logout);
+
+authRouter.get("/verify/:verificationToken", authControllers.verify);
+
+authRouter.post("/verify", isEmptyBody, validateBody(authVerifySchema), authControllers.resendVerifyEmail);
 
 authRouter.get("/current", authenticate, authControllers.current);
 
