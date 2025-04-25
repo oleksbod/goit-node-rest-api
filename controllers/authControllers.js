@@ -33,6 +33,11 @@ const login = async (req, res) => {
     if (!user) {
         throw HttpError(401, "Email or password is wrong");
     }
+
+    if (!user.verify) {
+        throw HttpError(401, "Email not verified");
+    }
+
     const comparePassword = await compareHash(password, user.password);
     if (!comparePassword) {
         throw HttpError(401, "Email or password is wrong");
@@ -103,6 +108,24 @@ const updateAvatar = async (req, res) => {
     }
 };
 
+const verify = async (req, res) => {
+    const { verificationToken } = req.params;
+    await authServices.verifyUser(verificationToken);
+
+    res.status(200).json({
+        message: "Verification successful",
+    });
+};
+
+const resendVerifyEmail = async (req, res) => {
+    const { email } = req.body;
+    await authServices.resendVerifyEmail(email);
+
+    res.status(200).json({
+        message: "Verification email sent",
+    });
+};
+
 export default {
     register: ctrlWrapper(register),
     login: ctrlWrapper(login),
@@ -110,4 +133,6 @@ export default {
     current: ctrlWrapper(current),
     updateSubscription: ctrlWrapper(updateSubscription),
     updateAvatar: ctrlWrapper(updateAvatar),
+    verify: ctrlWrapper(verify),
+    resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
 };
